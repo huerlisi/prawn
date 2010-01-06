@@ -182,7 +182,28 @@ describe "When setting colors" do
     colors.fill_color.should   == [0.8,1.0,0.0]
     colors.stroke_color.should == [1.0,0.0,0.8]
   end
+end
 
+describe "When using transactional color handling" do
+  before(:each) { create_pdf }
+  
+  it "should restore stroke and fill color after save_colors block" do
+    @pdf.fill_color "ccff00"
+    @pdf.stroke_color "ff00cc"
+    
+    @pdf.save_colors do
+      @pdf.fill_color "cccc00"
+      @pdf.stroke_color "ffff00"
+
+      colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+      colors.fill_color.should   == [0.8,0.8,0.0]
+      colors.stroke_color.should == [1.0,1.0,0.0]
+    end
+
+    colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+    colors.fill_color.should   == [0.8,1.0,0.0]
+    colors.stroke_color.should == [1.0,0.0,0.8]
+  end
 end
 
 describe "When using painting shortcuts" do

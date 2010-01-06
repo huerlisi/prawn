@@ -54,6 +54,19 @@ module Prawn
 
       alias_method :stroke_color=, :stroke_color
 
+      # Saves current stroke and fill colors, and then yields. When the
+      # block finishes, the original colors are restored.
+      #
+      def save_colors
+        original_fill_color = @fill_color
+        original_stroke_color = @stroke_color
+        
+        yield
+      ensure
+        fill_color original_fill_color
+        stroke_color original_stroke_color
+      end
+      
       # Provides the following shortcuts:
       #
       #    stroke_some_method(*args) #=> some_method(*args); stroke
