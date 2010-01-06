@@ -12,48 +12,110 @@ module Prawn
 
       # Sets or returns the fill color.
       #
-      # When called with no argument, it returns the current fill color.
+      # When called with no argument, this returns the current fill color. 
+      # Otherwise, it sets the current fill color. When a block is used, the
+      # fill color is applied transactionally and is rolled back when the
+      # block exits.
+      #
+      #   pdf.fill_color "000000"
+      #   pdf.text "fill color is black"
+      #
+      #   pdf.fill_color "cccccc" do
+      #     pdf.text "fill color is now gray"
+      #   end
+      #   pdf.text "fill color is black, again"
       #
       # If a single argument is provided, it should be a 6 digit HTML color
       # code.
       #
       #   pdf.fill_color "f0ffc1"
       #
-      # If 4 arguments are provided, the color is assumed to be a CMYK value
+      # If 4 arguments are provided, the color is assumed to be a CMYK value.
       # Values range from 0 - 100.
       #
       #   pdf.fill_color 0, 99, 95, 0
       #
       def fill_color(*color)
         return @fill_color if color.empty?
-        @fill_color = process_color(*color)
-        set_fill_color
+        
+        if block_given?
+          save_fill_color do
+            @fill_color = process_color(*color)
+            set_fill_color
+            yield
+          end
+        else
+          @fill_color = process_color(*color)
+          set_fill_color
+        end
       end
 
       alias_method :fill_color=, :fill_color
 
-      # Sets or returns the line stroking color.
+      # Sets or returns the stroke color.
       #
-      # When called with no argument, it returns the current stroking color.
+      # When called with no argument, this returns the current stroke color. 
+      # Otherwise, it sets the current stroke color. When a block is used, the
+      # stroke color is applied transactionally and is rolled back when the
+      # block exits.
+      #
+      #   pdf.stroke_color "000000"
+      #   pdf.text "stroke color is black"
+      #
+      #   pdf.stroke_color "cccccc" do
+      #     pdf.text "stroke color is now gray"
+      #   end
+      #   pdf.text "stroke color is black, again"
       #
       # If a single argument is provided, it should be a 6 digit HTML color
       # code.
       #
       #   pdf.stroke_color "f0ffc1"
       #
-      # If 4 arguments are provided, the color is assumed to be a CMYK value
+      # If 4 arguments are provided, the color is assumed to be a CMYK value.
       # Values range from 0 - 100.
       #
       #   pdf.stroke_color 0, 99, 95, 0
       #
       def stroke_color(*color)
         return @stroke_color if color.empty?
-        @stroke_color = process_color(*color)
-        set_stroke_color
+
+        if block_given?
+          save_stroke_color do
+            @stroke_color = process_color(*color)
+            set_stroke_color
+            yield
+          end
+        else
+          @stroke_color = process_color(*color)
+          set_stroke_color
+        end
       end
 
       alias_method :stroke_color=, :stroke_color
 
+      # Saves current stroke color, and then yields. When the
+      # block finishes, the original stroke color is restored.
+      #
+      def save_stroke_color
+        original_stroke_color = @stroke_color
+        
+        yield
+      ensure
+        stroke_color original_stroke_color
+      end
+      
+      # Saves current fill color, and then yields. When the
+      # block finishes, the original fill color is restored.
+      #
+      def save_fill_color
+        original_fill_color = @fill_color
+        
+        yield
+      ensure
+        fill_color original_fill_color
+      end
+      
       # Saves current stroke and fill colors, and then yields. When the
       # block finishes, the original colors are restored.
       #

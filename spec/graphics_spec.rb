@@ -204,6 +204,49 @@ describe "When using transactional color handling" do
     colors.fill_color.should   == [0.8,1.0,0.0]
     colors.stroke_color.should == [1.0,0.0,0.8]
   end
+
+  it "should allow temporary setting of fill_color using a transaction" do
+    @pdf.fill_color "ccff00"
+    @pdf.stroke_color "ff00cc"
+    
+    @pdf.fill_color "cccc00" do
+      colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+      colors.fill_color.should == [0.8,0.8,0.0]
+
+      @pdf.fill_color "cc00cc"
+      @pdf.stroke_color "ffff00"
+
+      colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+      colors.fill_color.should   == [0.8,0.0,0.8]
+      colors.stroke_color.should == [1.0,1.0,0.0]
+    end
+
+    colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+    colors.fill_color.should   == [0.8,1.0,0.0]
+    colors.stroke_color.should == [1.0,1.0,0.0]
+  end
+
+  it "should allow temporary setting of stroke_color using a transaction" do
+    @pdf.fill_color "ccff00"
+    @pdf.stroke_color "ff00cc"
+    
+    @pdf.stroke_color "ffff00" do
+      colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+      colors.stroke_color.should == [1.0,1.0,0.0]
+
+      @pdf.fill_color "cccc00"
+      @pdf.stroke_color "ff00ff"
+
+      colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+      colors.fill_color.should   == [0.8,0.8,0.0]
+      colors.stroke_color.should == [1.0,0.0,1.0]
+    end
+
+    colors = PDF::Inspector::Graphics::Color.analyze(@pdf.render)
+    colors.fill_color.should   == [0.8,0.8,0.0]
+    colors.stroke_color.should == [1.0,0.0,0.8]
+  end
+
 end
 
 describe "When using painting shortcuts" do
