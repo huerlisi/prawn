@@ -128,6 +128,8 @@ module Prawn
     # <tt>:at</tt> option omitted
     #
     def text(text, options={})
+      return if text.nil? or text == ""
+      
       # we might modify the options. don't change the user's hash
       options = options.dup
       if options[:at]

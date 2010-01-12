@@ -202,4 +202,15 @@ describe "when drawing text" do
     pages[0][:strings].should == ["Hello"]
     pages[1][:strings].should == ["World"]
   end
+  
+  it "should do not add any text when called with empty string or nil" do
+    @pdf.text "pre"
+    @pdf.text ""
+    @pdf.text "intra"
+    @pdf.text nil
+    @pdf.text "post"
+    
+    text = PDF::Inspector::Text.analyze(@pdf.render)  
+    text.strings.should == ["pre", "intra", "post"]
+  end
 end
